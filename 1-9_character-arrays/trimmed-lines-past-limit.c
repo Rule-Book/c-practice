@@ -1,5 +1,5 @@
 #include <stdio.h>
-#define MAXLINE	15	/* maximum input line length */
+#define MAXLINE	1000	/* maximum input line length */
 
 int get_line(char line[], int maxline);
 void copy(char to[], char from[]);
@@ -14,6 +14,8 @@ int main()
 
 	max = 0;
 	while ((len = get_line(line, MAXLINE)) > 0) {
+		if (line[0] == '\n')
+			continue;
 		if (len > max) {
 			max = len;
 			copy(longest, line);
@@ -46,15 +48,31 @@ int get_line(char s[], int lim)
 		s[i] = c;
 		prev = c;
 		c = getchar();
+		/* update index of last trailing character excluding ' ' */
 		if (c!=EOF&&c!='\n'&&((prev!=' ' && c==' ') || c!=' ')) {
 			last_space = i+1;
-			printf("update ls to %d;prev %d|c %d\n", i+1, prev, c);
 		}
 	}
-/*	if (i >= lim-1 && c!=EOF && c!='\n') {
-		;
+	/* pseudo error code for lines to be ignored in main method */
+	if (last_space <= 1 && (s[0] == ' ' || s[0] == '\n')) {
+		s[0] = '\n';
+		return 1;
 	}
-	else */
+	/* if limit was reached without ending in newline or EOF, continue */
+	while (c!='\n' && c!=EOF) {
+		prev = c;
+		++i;
+		c = getchar();
+		if (c!=EOF&&c!='\n'&&((prev!=' ' && c==' ') || c!=' ')) {
+			last_space = i+1;
+		}
+	}
+	/* cap overlimit strings to avoid print and program end issues */
+	if (i >= lim-2) {
+		s[lim-2] = '\n';
+		s[lim-1] = '\0';
+	}
+	/* set length to end of last non space character */
 	i = last_space;
 	if (c == '\n') {
 		s[i] = c;
